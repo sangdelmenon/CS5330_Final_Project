@@ -2,17 +2,22 @@
 # CS5330 Final Project - Model Architectures
 # Spring 2026
 #
-# Defines two architectures for multi-class RGB object recognition:
-#   ObjectCNN  - 3-layer CNN adapted from Project 5, input 3 x IMG_SIZE x IMG_SIZE
-#   ObjectViT  - Minimal Vision Transformer (patch size 8), same input/output
+# Defines three architectures for multi-class RGB object recognition:
+#   ObjectCNN      - 3-layer CNN adapted from Project 5, input 3 x IMG_SIZE x IMG_SIZE
+#   ObjectViT      - Minimal Vision Transformer (patch size 8), same input/output
+#   MobileNetV2    - Pretrained MobileNetV2 backbone with a custom classifier head
+#                    (best real-world generalisation from small datasets)
 #
-# Both return log-softmax probabilities over num_classes.
+# All three return log-softmax probabilities over num_classes.
+# MobileNetV2 expects IMG_SIZE = 224; CNN and ViT use IMG_SIZE = 64.
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision import models
 
-IMG_SIZE = 64   # spatial size used for all inputs (pixels)
+IMG_SIZE        = 64    # spatial size for CNN and ViT
+IMG_SIZE_MOBILE = 224   # spatial size for MobileNetV2
 
 
 # ---------------------------------------------------------------------------
@@ -118,3 +123,39 @@ class ObjectViT(nn.Module):
         x   = self.transformer(x)
         x   = self.norm(x[:, 0])                          # CLS token output
         return F.log_softmax(self.head(x), dim=1)
+
+
+# ---------------------------------------------------------------------------
+# MobileNetV2 (transfer learning)
+# ---------------------------------------------------------------------------
+
+class MobileNetV2(nn.Module):
+    """
+    Pretrained MobileNetV2 backbone with a fine-tuned classification head.
+
+    The ImageNet backbone provides strong general visual features.
+    Only the final classifier layer is replaced; the backbone is fine-tuned
+    with a low learning rate to adapt to the target classes.
+
+    Input:  3 x 224 x 224 (use IMG_SIZE_MOBILE = 224)
+    Output: num_classes log-probabilities
+    """
+
+    def __init__(self, num_classes, freeze_backbone=False):
+        super().__init__()
+        base = models.mobilenet_v2(weights=models.MobileNet_V2_Weights.IMAGENET1K_V1)
+
+        if freeze_backbone:
+            for param in base.features.parameters():
+                param.requires_grad = False
+
+        # Replace the default 1000-class head with our own
+        in_features = base.classifier[1].in_features
+        base.classifier = nn.Sequential(
+            nn.Dropout(0.3),
+            nn.Linear(in_features, num_classes),
+        )
+        self.model = base
+
+    def forward(self, x):
+        return F.log_softmax(self.model(x), dim=1)

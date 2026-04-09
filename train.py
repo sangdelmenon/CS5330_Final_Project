@@ -2,12 +2,13 @@
 # CS5330 Final Project - Model Training and Evaluation
 # Spring 2026
 #
-# Trains an ObjectCNN (default) or ObjectViT on the collected dataset,
+# Trains an ObjectCNN / ObjectViT / MobileNetV2 on the collected dataset,
 # evaluates per-class precision and recall on a held-out test set, and
 # saves the best checkpoint for use by recognize_ar.py.
 #
 # Usage:
-#   python train.py                          # CNN, 20 epochs
+#   python train.py                               # CNN, 20 epochs
+#   python train.py --model mobilenet             # MobileNetV2 (best generalisation)
 #   python train.py --model vit --epochs 30
 #   python train.py --data my_data/ --lr 5e-4
 #
@@ -28,7 +29,7 @@ from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 
-from model import ObjectCNN, ObjectViT, IMG_SIZE
+from model import ObjectCNN, ObjectViT, MobileNetV2, IMG_SIZE, IMG_SIZE_MOBILE
 
 
 # ---------------------------------------------------------------------------
@@ -39,8 +40,8 @@ def parse_args():
     p = argparse.ArgumentParser(description='Train the object recognition model')
     p.add_argument('--data',   default='data',
                    help='Dataset root directory (must contain one sub-folder per class)')
-    p.add_argument('--model',  default='cnn', choices=['cnn', 'vit'],
-                   help='Model architecture: cnn or vit')
+    p.add_argument('--model',  default='cnn', choices=['cnn', 'vit', 'mobilenet'],
+                   help='Model architecture: cnn, vit, or mobilenet')
     p.add_argument('--epochs', type=int,   default=20)
     p.add_argument('--batch',  type=int,   default=32)
     p.add_argument('--lr',     type=float, default=1e-3)
@@ -53,26 +54,30 @@ def parse_args():
 # Data loading
 # ---------------------------------------------------------------------------
 
-def _train_transform():
+def _train_transform(img_size):
     return transforms.Compose([
-        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.Resize((img_size, img_size)),
         transforms.RandomHorizontalFlip(),
-        transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.2),
-        transforms.RandomRotation(15),
+        transforms.RandomVerticalFlip(p=0.1),
+        transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.3, hue=0.1),
+        transforms.RandomRotation(25),
+        transforms.RandomPerspective(distortion_scale=0.4, p=0.5),
+        transforms.RandomGrayscale(p=0.1),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        transforms.RandomErasing(p=0.3, scale=(0.02, 0.2)),
     ])
 
 
-def _eval_transform():
+def _eval_transform(img_size):
     return transforms.Compose([
-        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.Resize((img_size, img_size)),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     ])
 
 
-def load_datasets(data_dir):
+def load_datasets(data_dir, img_size):
     """
     Loads images with torchvision.datasets.ImageFolder and splits into
     train (70%) / val (15%) / test (15%).
@@ -80,8 +85,8 @@ def load_datasets(data_dir):
     Augmentation is applied only to the training split.
     """
     # Build the full dataset with augmented transforms for index computation
-    aug_dataset  = datasets.ImageFolder(data_dir, transform=_train_transform())
-    eval_dataset = datasets.ImageFolder(data_dir, transform=_eval_transform())
+    aug_dataset  = datasets.ImageFolder(data_dir, transform=_train_transform(img_size))
+    eval_dataset = datasets.ImageFolder(data_dir, transform=_eval_transform(img_size))
     classes = aug_dataset.classes
 
     n       = len(aug_dataset)
@@ -229,7 +234,8 @@ def main(argv):
                           'cuda' if torch.cuda.is_available() else 'cpu')
     print('Device:', device)
 
-    train_set, val_set, test_set, classes = load_datasets(args.data)
+    img_size = IMG_SIZE_MOBILE if args.model == 'mobilenet' else IMG_SIZE
+    train_set, val_set, test_set, classes = load_datasets(args.data, img_size)
     num_classes = len(classes)
 
     train_loader = DataLoader(train_set, batch_size=args.batch, shuffle=True,  num_workers=0)
@@ -239,13 +245,22 @@ def main(argv):
     # Build model
     if args.model == 'vit':
         model = ObjectViT(num_classes).to(device)
+    elif args.model == 'mobilenet':
+        model = MobileNetV2(num_classes).to(device)
     else:
         model = ObjectCNN(num_classes).to(device)
 
     n_params = sum(p.numel() for p in model.parameters())
     print('Architecture: {}  |  Parameters: {:,}'.format(args.model.upper(), n_params))
 
-    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
+    # MobileNet: use a lower LR for the pretrained backbone, higher for the new head
+    if args.model == 'mobilenet':
+        optimizer = optim.Adam([
+            {'params': model.model.features.parameters(), 'lr': args.lr * 0.1},
+            {'params': model.model.classifier.parameters(), 'lr': args.lr},
+        ], weight_decay=1e-4)
+    else:
+        optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
     train_losses, val_losses = [], []
@@ -272,7 +287,7 @@ def main(argv):
                 'model_state': model.state_dict(),
                 'classes':     classes,
                 'arch':        args.model,
-                'img_size':    IMG_SIZE,
+                'img_size':    img_size,
             }, args.output)
             flag = '  <- best'
 

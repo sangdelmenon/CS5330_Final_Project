@@ -32,7 +32,7 @@ import torch
 from torchvision import transforms
 from PIL import Image
 
-from model import ObjectCNN, ObjectViT, IMG_SIZE
+from model import ObjectCNN, ObjectViT, MobileNetV2, IMG_SIZE
 
 
 # One distinct BGR colour per class (cycles if more than 8 classes)
@@ -75,7 +75,12 @@ def load_model(model_path, device):
     arch       = checkpoint.get('arch', 'cnn')
     img_size   = checkpoint.get('img_size', IMG_SIZE)
 
-    model = ObjectViT(len(classes)) if arch == 'vit' else ObjectCNN(len(classes))
+    if arch == 'vit':
+        model = ObjectViT(len(classes))
+    elif arch == 'mobilenet':
+        model = MobileNetV2(len(classes))
+    else:
+        model = ObjectCNN(len(classes))
     model.load_state_dict(checkpoint['model_state'])
     model.eval().to(device)
     return model, classes, img_size
