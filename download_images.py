@@ -1,4 +1,5 @@
 # Sangeeth Deleep Menon
+# NUID: 002524579
 # CS5330 Final Project - Web Image Downloader
 # Spring 2026
 #
