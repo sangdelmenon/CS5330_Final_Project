@@ -5,6 +5,9 @@
 **Program:** MSCS Boston, Section 03 (CRN 40669, Online)
 **Course:** CS5330 — Pattern Recognition and Computer Vision, Spring 2026
 
+**Demo video:** *(add YouTube/Google Drive URL here after recording)*
+**Dataset:** *(add Google Drive URL here if uploading)*
+
 ---
 
 ## Table of Contents

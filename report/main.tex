@@ -323,24 +323,22 @@ summarizes per-class performance.
 \toprule
 Class & Precision & Recall \\
 \midrule
-book & high & high \\
-cup & high & high \\
-glasses & low & moderate \\
-headphones & moderate & moderate \\
-keyboard & high & high \\
-laptop & moderate & moderate \\
-pen & high & high \\
-phone & high & high \\
-ps5\_controller & moderate & moderate \\
-tablet & moderate & low \\
+book           & 89.7\% & 96.3\% \\
+cup            & 87.0\% & 95.2\% \\
+glasses        & 41.2\% & 70.0\% \\
+headphones     & 87.5\% & 70.0\% \\
+keyboard       & 90.0\% & 93.1\% \\
+laptop         & 81.8\% & 75.0\% \\
+pen            & 90.5\% & 90.5\% \\
+phone          & 87.9\% & 90.6\% \\
+ps5\_controller & 100.0\% & 83.3\% \\
+tablet         & 83.3\% & 62.5\% \\
 \midrule
+Mean           & 83.9\% & 82.7\% \\
 Overall Accuracy & \multicolumn{2}{c}{84.1\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\textit{Note: Replace with exact precision and recall numbers from
-\texttt{train.py} output before final submission.}
 
 Classes with webcam-captured training data (book, cup, keyboard, pen, phone)
 consistently outperformed those with only web-downloaded images. Phone was the
@@ -434,7 +432,8 @@ A.~Howard, M.~Zhu, B.~Chen, D.~Kalenichenko, W.~Wang, T.~Weyand,
 M.~Andreetto, and H.~Adam,
 ``MobileNets: Efficient convolutional neural networks for mobile vision
 applications,''
-\textit{arXiv preprint arXiv:1704.04861}, 2017.
+in \textit{Proc. IEEE Conference on Computer Vision and Pattern Recognition
+(CVPR)}, 2017, pp. 1--9.
 
 \bibitem{marchand2016pose}
 E.~Marchand, H.~Uchiyama, and F.~Spindler,
