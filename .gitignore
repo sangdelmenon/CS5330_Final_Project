@@ -32,3 +32,4 @@ __MACOSX/
 # IDE
 .vscode/
 .idea/
+vit_model.pth

@@ -42,7 +42,7 @@ through a live webcam feed. Three neural network architectures were implemented
 and compared: a three-layer convolutional neural network (CNN) trained from
 scratch, a minimal Vision Transformer (ViT) trained from scratch, and a
 MobileNetV2 backbone fine-tuned with transfer learning. A dataset of
-approximately 1400 images across 10 object classes was collected using a
+1419 images across 10 object classes was assembled using a
 combination of webcam captures and web-downloaded images. The MobileNetV2
 model achieved 88.8\% test accuracy on the 10-class dataset and was selected
 as the deployed backbone. When the classifier detects an object with sufficient
@@ -97,16 +97,12 @@ the AR experience.
 
 \subsection{Efficient Convolutional Architectures}
 
-Howard et al.\ introduced MobileNets~\cite{howard2017mobilenets}, a family of
-efficient convolutional networks designed for mobile and embedded vision
-applications. The key innovation is depthwise separable convolutions, which
-dramatically reduce computation compared to standard convolutions while
-retaining most of the representational power. Sandler et al.\ extended this
-work with MobileNetV2~\cite{sandler2018mobilenetv2}, which adds inverted
-residual blocks with linear bottlenecks to improve gradient flow and accuracy.
-MobileNetV2 is used in this project as the transfer learning backbone because
-it provides a strong feature extractor that generalizes well even when
-fine-tuned on a small custom dataset.
+Sandler et al.\ introduced MobileNetV2~\cite{sandler2018mobilenetv2}, which
+uses inverted residual blocks with linear bottlenecks to build an efficient
+network suitable for mobile and embedded applications. MobileNetV2 is used in
+this project as the transfer learning backbone because its ImageNet-pretrained
+weights provide a strong visual feature extractor that generalizes well even
+when fine-tuned on a small custom dataset.
 
 \subsection{Vision Transformers}
 
@@ -281,24 +277,56 @@ alpha blending.
 \subsection{Evaluation Setup}
 
 Each model was evaluated on the held-out test split (15\% of all images,
-fixed seed). Overall accuracy and per-class precision and recall were computed.
-The CNN was first trained and evaluated on the original 5-class dataset. The
-MobileNetV2 was then trained on the full 10-class dataset. Live inference speed
-was measured as an exponential moving average of frame processing time during
-the live demo.
+fixed seed 42). Overall accuracy and per-class precision and recall were
+computed. The CNN was trained and evaluated on the original 5-class dataset.
+The ViT and MobileNetV2 were trained on the full 10-class dataset. Live
+inference speed was measured as an exponential moving average of frame
+processing time during the live demo.
+
+Table~\ref{tab:model_comparison} summarizes the three architectures.
+
+\begin{table}[h]
+\centering
+\caption{Architecture comparison}
+\label{tab:model_comparison}
+\begin{tabular}{lccc}
+\toprule
+Model & Classes & Parameters & Test Accuracy \\
+\midrule
+ObjectCNN     & 5  & 2.11M & 79.7\% \\
+ObjectViT     & 10 & 0.83M & 43.2\% \\
+MobileNetV2   & 10 & 2.24M & \textbf{88.8\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{CNN Results (5 Classes)}
 
 The CNN trained on the 5-class dataset reached a test accuracy of 79.7\%
-(Fig.~\ref{fig:cnn_curves}, Fig.~\ref{fig:cnn_cm}). Validation accuracy
-plateaued near 68\% during training, with the best checkpoint saved at epoch
-14. The relatively modest result compared to a simpler augmentation regime
-reflects the aggressive augmentation pipeline applied during training, which
-includes random perspective distortion, random erasing, and color jitter.
-These transforms add useful variance for the larger 10-class model but make
-convergence harder for the smaller CNN on a clean 5-class dataset. The
-confusion matrix shows most errors occurring between visually similar objects
-at different scales.
+(Fig.~\ref{fig:cnn_curves}, Fig.~\ref{fig:cnn_cm}). The best checkpoint was
+saved at epoch 14. The result reflects the aggressive augmentation pipeline
+applied during training: transforms like random perspective distortion and
+random erasing add useful variance for the 10-class model but make convergence
+harder for a smaller CNN on a clean 5-class dataset.
+
+\subsection{ViT Results (10 Classes)}
+
+The Vision Transformer trained from scratch on the 10-class dataset reached
+43.2\% test accuracy (Fig.~\ref{fig:vit_cm}). Three classes, glasses,
+headphones, and ps5\_controller, received near-zero precision, indicating the
+model did not learn discriminative features for those categories. The mean
+epoch time was 14.2 seconds on Apple MPS. The result confirms the well-known
+finding that ViTs trained from scratch on small datasets struggle because
+transformers require substantial data to learn useful attention patterns.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\columnwidth]{VIT_ConfusionMatrix.png}
+  \caption{ViT confusion matrix on the held-out test set (10 classes). Many
+  classes cluster in a few bins, reflecting the model's difficulty
+  generalising from scratch on a small dataset.}
+  \label{fig:vit_cm}
+\end{figure}
 
 \begin{figure}[h]
   \centering
@@ -397,11 +425,14 @@ Transfer learning with MobileNetV2 proved to be the most practical approach
 for building a real-time object classifier on a small custom dataset. The
 pretrained ImageNet backbone provides general visual features that carry over
 well to everyday objects even with only 100 to 170 training images per class,
-reaching 88.8\% test accuracy across 10 classes.
-Training from scratch with the CNN achieved 79.7\% on the 5-class dataset,
-which is reasonable but reflects the difficulty introduced by the aggressive
-augmentation pipeline. The ViT was the slowest to converge and would
-benefit from a larger dataset.
+reaching 88.8\% test accuracy across 10 classes. Training from scratch with
+the CNN achieved 79.7\% on the 5-class dataset, which is reasonable given the
+aggressive augmentation pipeline but is otherwise limited by the small number
+of classes. The ViT reached only 43.2\% on the 10-class dataset when trained
+from scratch, consistent with the literature finding that transformers require
+significantly more data than CNNs to learn useful representations. The
+parameter count (0.83M for ViT versus 2.11M for the CNN) was not the limiting
+factor; the lack of pretrained features was.
 
 The biggest remaining source of error is the tablet class at 70\% precision,
 as flat rectangular devices are inherently ambiguous at certain angles and
@@ -458,14 +489,6 @@ K.~He, X.~Zhang, S.~Ren, and J.~Sun,
 ``Deep residual learning for image recognition,''
 in \textit{Proc. IEEE Conference on Computer Vision and Pattern Recognition
 (CVPR)}, 2016, pp. 770--778.
-
-\bibitem{howard2017mobilenets}
-A.~Howard, M.~Zhu, B.~Chen, D.~Kalenichenko, W.~Wang, T.~Weyand,
-M.~Andreetto, and H.~Adam,
-``MobileNets: Efficient convolutional neural networks for mobile vision
-applications,''
-in \textit{Proc. IEEE Conference on Computer Vision and Pattern Recognition
-(CVPR)}, 2017, pp. 1--9.
 
 \bibitem{marchand2016pose}
 E.~Marchand, H.~Uchiyama, and F.~Spindler,
