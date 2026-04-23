@@ -26,7 +26,7 @@ The dataset has 10 classes and 1419 images total. Five classes, book, cup, keybo
 
 The pipeline has four steps. First, a center region of interest is cropped and classified by MobileNetV2. Second, a five-frame majority-vote buffer smooths out flickering, and an entropy check labels uncertain frames as Unknown. Third, a fixed-depth pinhole camera model back-projects the ROI into 3D space at 0.5 meters. Fourth, we use OpenCV's projectPoints to draw a 3D wireframe box and a floating label tag showing the class name and confidence.
 
-The key takeaway from the data is that webcam-captured classes consistently outperformed the web-only ones. Data quality matters more than quantity.
+On average, webcam classes edged out the web-only ones, though not across the board. We will get into where the web classes held up and where they did not in a moment.
 
 ---
 

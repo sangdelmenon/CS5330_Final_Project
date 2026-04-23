@@ -284,7 +284,10 @@ fixed seed 42). Overall accuracy and per-class precision and recall were
 computed. The CNN was trained and evaluated on the original 5-class dataset.
 The ViT and MobileNetV2 were trained on the full 10-class dataset. Live
 inference speed was measured as an exponential moving average of frame
-processing time during the live demo.
+processing time during the live demo. The reported dataset size of 1419 images
+is the file count; 8 web-crawled images failed to decode at DataLoader
+iteration time, so the effective test partition used by both the ViT and
+MobileNetV2 confusion matrices contains 206 images rather than 214.
 
 Table~\ref{tab:model_comparison} summarizes the three architectures.
 

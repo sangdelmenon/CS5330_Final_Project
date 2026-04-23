@@ -34,9 +34,9 @@ The final dataset has 1419 images across the 10 classes.
 | ps5_controller | 102 |
 | tablet | 138 |
 
-All images were split into 70% for training, 15% for validation, and 15% for testing using a fixed random seed for reproducibility. Training images were augmented with random horizontal and vertical flips, color jitter, random perspective distortion, random grayscale, random erasing, and rotations up to 25 degrees. Validation and test images were not augmented.
+All images were split into 70% for training, 15% for validation, and 15% for testing using a fixed random seed for reproducibility. Training images were augmented with random horizontal and vertical flips, color jitter, random perspective distortion, random grayscale, random erasing, and rotations up to 25 degrees. Validation and test images were not augmented. The 1419 figure is the file count on disk. Eight web-crawled images failed to decode at runtime, so the effective test partition used by the ViT and MobileNetV2 confusion matrices contains 206 images rather than 214.
 
-The two groups of classes differ in data quality. The first five have webcam photos taken in consistent conditions with the object centered in frame. The later five rely entirely on web images, which vary more in background, angle, and lighting. This difference has a measurable impact on accuracy.
+The two groups of classes differ in data quality. The first five have webcam photos taken in consistent conditions with the object centered in frame. The later five rely entirely on web images, which vary more in background, angle, and lighting. On average, webcam classes edged out the web-only ones on precision and recall, though not uniformly across every class.
 
 ---
 
@@ -150,7 +150,7 @@ The screenshot below was captured during a live session.
 
 ![AR Screenshot](ar_screenshot.png)
 
-The center ROI contains a PS5 DualSense controller as the dominant object and the model predicts ps5_controller at 85% confidence. The green 3D wireframe box is anchored to the ROI with visible front and back faces connected by pillars. The label tag reads "ps5_controller 85%" and is positioned above the front face. The controller is one of the web-only classes, so a confident correct prediction at 85% reflects the strength of the retrained MobileNetV2 backbone on images it was not explicitly fine-tuned on.
+The center ROI contains a PS5 DualSense controller as the dominant object and the model predicts ps5_controller at 85% confidence. The green 3D wireframe box is anchored to the ROI with visible front and back faces connected by pillars. The label tag reads "ps5_controller 85%" and is positioned above the front face. The controller is one of the web-only classes, so a confident correct prediction at 85% on a live webcam frame, a domain the model saw no training examples from, reflects the strength of the ImageNet-pretrained backbone generalizing to a new capture setting.
 
 ---
 
