@@ -24,13 +24,15 @@ The question I wanted to answer was: can we combine these two things so that any
 
 ### Slide 3 — System Overview
 
-The pipeline has three steps.
+The pipeline has four steps.
 
 First, we crop a square region from the center of the webcam frame and run it through MobileNetV2 to get a predicted class and a confidence score.
 
-Second, if the confidence is above the threshold, we estimate a rough object pose. We use a fixed-depth pinhole camera model — the object is assumed to be at about half a meter from the camera — and we back-project the bounding box into 3D space.
+Second, before drawing anything, two checks run. A five-frame majority-vote buffer smooths out flickering predictions by taking the most common class over the last five frames. An entropy-based rejection step then checks how spread out the probability distribution is. If the model is genuinely uncertain about everything it sees, the frame is labelled "Unknown" rather than guessing. This handles cases where no known object is in view.
 
-Third, we use OpenCV's projectPoints function to map the eight corners of a 3D box back into pixel coordinates, and we draw the wireframe box along with a floating label tag showing the class name and confidence.
+Third, if the class passes both checks and exceeds the confidence threshold, we estimate a rough object pose using a fixed-depth pinhole camera model with the object assumed to be at about half a meter from the camera.
+
+Fourth, we use OpenCV's projectPoints function to map the eight corners of a 3D box back into pixel coordinates, and we draw the wireframe box along with a floating label tag showing the class name and confidence.
 
 ---
 
@@ -94,11 +96,13 @@ The system was running at about 29.8 FPS during this session with a confidence t
 
 ### Slide 9 — Limitations and Next Steps
 
-There are four current limitations worth mentioning.
+There are two current limitations we have not yet addressed.
 
-The first is the fixed center ROI — the system only looks at the center of the frame, so objects off to the side are ignored. The second is fixed depth — the 0.5-meter assumption means the 3D box will appear incorrectly scaled if the object is much closer or further away. Third, there is no background class, so the model always outputs its best guess even when nothing recognizable is in frame. Finally, predictions can flicker between frames when confidence is near the threshold.
+The first is the fixed center ROI. The system only looks at the center of the frame, so objects off to the side are ignored entirely. The second is fixed depth. The 0.5-meter assumption means the 3D box will appear incorrectly scaled if the object is much closer or further away.
 
-The easiest fixes are: collect webcam images for the five web-only classes, which would likely push accuracy above 90%; add a short history buffer of five frames to smooth out flickering; add a background class; and replace the fixed ROI with a sliding-window or YOLO-based detector.
+Two earlier limitations have already been solved. Prediction flickering is handled by the five-frame majority-vote buffer. The lack of a background class is handled by entropy-based rejection, which lets the system say "Unknown" when nothing familiar is in view.
+
+The most impactful next step would be collecting webcam images for the five web-only classes, which would likely push accuracy above 90%. After that, replacing the fixed center ROI with a sliding-window or YOLO-based detector would allow the system to handle objects anywhere in the frame.
 
 ---
 

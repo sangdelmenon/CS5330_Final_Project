@@ -457,7 +457,7 @@
     <div class="divider"></div>
     <p class="subtitle">Using deep learning to turn any everyday object<br>into an augmented reality anchor</p>
     <div class="author">
-      Sangeeth Deleep Menon · NUID 002524579<br>
+      Sangeeth Deleep Menon · Raj Gupta<br>
       Khoury College of Computer Sciences · Northeastern University
     </div>
   </section>
@@ -501,11 +501,17 @@
         <li>
           <div class="step-num">2</div>
           <div>
-            <strong>Estimate pose</strong> — use a fixed-depth pinhole camera model to back-project the ROI bounding box into 3D space at 0.5 m
+            <strong>Smooth and reject</strong> — a 5-frame majority-vote buffer removes flicker; entropy-based rejection labels uncertain frames as "Unknown"
           </div>
         </li>
         <li>
           <div class="step-num">3</div>
+          <div>
+            <strong>Estimate pose</strong> — use a fixed-depth pinhole camera model to back-project the ROI bounding box into 3D space at 0.5 m
+          </div>
+        </li>
+        <li>
+          <div class="step-num">4</div>
           <div>
             <strong>Render</strong> — project 8 box corners back to pixels with <code style="color: var(--blue); font-size: 14px;">cv2.projectPoints</code> and draw a 3D wireframe box with a floating label tag
           </div>
@@ -713,16 +719,15 @@
         <ul class="steps">
           <li><div class="step-num" style="background: #3a1010; color: #ff453a;">!</div><div><strong>Fixed center ROI</strong> — only detects objects at center of frame</div></li>
           <li><div class="step-num" style="background: #3a1010; color: #ff453a;">!</div><div><strong>Fixed depth (0.5 m)</strong> — box scale is wrong at very close or far distances</div></li>
-          <li><div class="step-num" style="background: #3a1010; color: #ff453a;">!</div><div><strong>No background class</strong> — always outputs a class even when nothing is there</div></li>
-          <li><div class="step-num" style="background: #3a1010; color: #ff453a;">!</div><div><strong>Prediction flicker</strong> — no temporal smoothing between frames</div></li>
+          <li><div class="step-num" style="background: #3a1010; color: #ff453a;">!</div><div><strong>Single object only</strong> — multiple objects in frame are not handled</div></li>
         </ul>
       </div>
       <div>
-        <div style="font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px;">Easy wins next</div>
+        <div style="font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px;">Already addressed</div>
         <ul class="steps">
+          <li><div class="step-num">✓</div><div>5-frame majority-vote buffer eliminates label flickering</div></li>
+          <li><div class="step-num">✓</div><div>Entropy-based rejection shows "Unknown" when no familiar object is present</div></li>
           <li><div class="step-num">→</div><div>Collect webcam images for the 5 web-only classes to push accuracy above 90%</div></li>
-          <li><div class="step-num">→</div><div>Add a 5-frame history buffer to smooth out prediction flickering</div></li>
-          <li><div class="step-num">→</div><div>Add a background class so the system can say "I don't know"</div></li>
           <li><div class="step-num">→</div><div>Replace the fixed ROI with a sliding-window or YOLO-based detector</div></li>
         </ul>
       </div>
@@ -754,7 +759,7 @@
       </div>
     </div>
     <div style="margin-top: 48px; font-size: 14px; color: var(--gray); text-align: center;">
-      Sangeeth Deleep Menon · CS5330 Spring 2026 · Northeastern University
+      Sangeeth Deleep Menon · Raj Gupta · CS5330 Spring 2026 · Northeastern University
     </div>
   </section>
 

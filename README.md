@@ -362,12 +362,17 @@ The AR overlay uses a **fixed-depth pinhole camera model**:
 
 | Limitation | Description |
 |------------|-------------|
-| Fixed-centre ROI | Only classifies one region per frame; will fail if the object is off-centre |
-| Fixed depth | Z = 0.5 m is a rough assumption; the 3D box size will appear incorrect at very different distances |
-| No background class | If no known object is present the system still outputs the most likely class; a "background/unknown" class would help |
-| Small training set | Accuracy depends heavily on dataset quality and size; collecting 100+ varied images per class is recommended |
-| No temporal smoothing | Class prediction can flicker between frames; a short history buffer would stabilise the output |
-| Single object | Multiple simultaneous objects are not handled; extending to multi-region or detector-based approaches (e.g., YOLO) would be a natural next step |
+| Fixed-centre ROI | Only classifies one region per frame; objects off-centre are not detected |
+| Fixed depth | Z = 0.5 m is a rough assumption; the 3D box will appear incorrectly scaled at very different distances |
+| Small training set | Accuracy depends heavily on dataset quality; the five web-only classes would benefit from additional webcam images |
+| Single object | Multiple simultaneous objects are not handled; a detector-based approach such as YOLO would be needed |
+
+**Features implemented to address common failure modes:**
+
+| Feature | Description |
+|---------|-------------|
+| Temporal smoothing | A 5-frame majority-vote history buffer prevents label flickering at decision boundaries |
+| Entropy-based rejection | Frames where the probability distribution is too flat are labelled "Unknown", removing the need for a dedicated background class |
 
 ---
 
