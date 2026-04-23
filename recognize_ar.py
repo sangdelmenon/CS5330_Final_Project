@@ -68,6 +68,10 @@ def parse_args():
                    help='Number of frames to smooth predictions over')
     p.add_argument('--entropy-thresh', type=float, default=0.85,
                    help='Normalised entropy above which the frame is shown as Unknown (0-1)')
+    p.add_argument('--sliding', action='store_true',
+                   help='Use a sliding-window grid instead of a single centre ROI')
+    p.add_argument('--grid', type=int, default=3,
+                   help='Grid size for sliding-window mode (e.g. 3 → 3×3 = 9 windows)')
     return p.parse_args()
 
 
@@ -205,6 +209,41 @@ def draw_label_tag(frame, text, anchor_px, color, bg_alpha=0.72):
 
 
 # ---------------------------------------------------------------------------
+# Sliding-window detection
+# ---------------------------------------------------------------------------
+
+def sliding_window_best(model, transform, frame, device, grid, roi_fraction):
+    """
+    Classifies a grid of (grid × grid) ROIs spread evenly across the frame.
+    Returns (roi_box, raw_idx, conf, entropy) for the window with highest
+    top-1 confidence, or None if the frame is too small for any window.
+    """
+    h, w = frame.shape[:2]
+    roi_size = int(min(h, w) * roi_fraction)
+
+    best_conf = -1.0
+    best = None
+
+    for gi in range(1, grid + 1):
+        for gj in range(1, grid + 1):
+            cx = int(w * gi / (grid + 1))
+            cy = int(h * gj / (grid + 1))
+            x1 = max(0, cx - roi_size // 2)
+            y1 = max(0, cy - roi_size // 2)
+            x2 = min(w, x1 + roi_size)
+            y2 = min(h, y1 + roi_size)
+            if (x2 - x1) < 32 or (y2 - y1) < 32:
+                continue
+            roi = frame[y1:y2, x1:x2]
+            idx, conf, entropy = classify_roi(model, transform, roi, device)
+            if conf > best_conf:
+                best_conf = conf
+                best = (x1, y1, x2, y2), idx, conf, entropy
+
+    return best
+
+
+# ---------------------------------------------------------------------------
 # Inference
 # ---------------------------------------------------------------------------
 
@@ -243,8 +282,9 @@ def run_live(args):
     model, classes, img_size = load_model(args.model, device)
     transform = build_transform(img_size)
     print('Classes:', classes)
-    print('Confidence threshold: {:.0f}%  |  History: {} frames  |  Entropy threshold: {:.2f}'.format(
-        args.conf * 100, args.history, args.entropy_thresh))
+    mode_str = 'sliding {}x{}'.format(args.grid, args.grid) if args.sliding else 'centre ROI'
+    print('Confidence threshold: {:.0f}%  |  History: {} frames  |  Entropy threshold: {:.2f}  |  Mode: {}'.format(
+        args.conf * 100, args.history, args.entropy_thresh, mode_str))
 
     cap = cv2.VideoCapture(args.camera)
     if not cap.isOpened():
@@ -263,12 +303,24 @@ def run_live(args):
             break
 
         h, w = frame.shape[:2]
-        roi_box       = get_roi_box(h, w, args.roi)
         camera_matrix = build_camera_matrix(w, h)
-        x1, y1, x2, y2 = roi_box
 
-        roi                    = frame[y1:y2, x1:x2]
-        raw_idx, conf, entropy = classify_roi(model, transform, roi, device)
+        if args.sliding:
+            result = sliding_window_best(
+                model, transform, frame, device, args.grid, args.roi)
+            if result is None:
+                cv2.imshow('AR Object Recognition  (Q=quit  S=screenshot)', frame)
+                if (cv2.waitKey(1) & 0xFF) == ord('q'):
+                    break
+                continue
+            roi_box, raw_idx, conf, entropy = result
+        else:
+            roi_box       = get_roi_box(h, w, args.roi)
+            x1, y1, x2, y2 = roi_box
+            roi            = frame[y1:y2, x1:x2]
+            raw_idx, conf, entropy = classify_roi(model, transform, roi, device)
+
+        x1, y1, x2, y2 = roi_box
 
         # Temporal smoothing: pick the most common prediction over recent frames
         history.append(raw_idx)

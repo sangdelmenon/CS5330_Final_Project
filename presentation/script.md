@@ -1,119 +1,77 @@
 # Presentation Script
 ## Real-Time Object Recognition and AR Overlay
-### CS5330 Final Project — Sangeeth Deleep Menon
+### CS5330 Final Project, Sangeeth Deleep Menon and Raj Gupta
 
 ---
 
-### Slide 1 — Title
+### Slide 1: Title
 
-Hi, my name is Sangeeth Deleep Menon and this is my CS5330 final project.
-The project is called Real-Time Object Recognition and AR Overlay.
-The core idea is to use deep learning to recognize everyday objects from a webcam feed, and then draw augmented reality graphics directly on top of the detected object — with no printed marker required.
+Hi, I am Sangeeth Deleep Menon presenting with my partner Raj Gupta. This is our CS5330 final project: Real-Time Object Recognition and AR Overlay. The idea is to use deep learning to recognize everyday objects from a webcam and draw augmented reality graphics on top of them, with no printed marker of any kind required.
 
 ---
 
-### Slide 2 — The Problem
+### Slide 2: Motivation
 
-Traditional augmented reality systems need a physical anchor to work. In Project 4 of this course we used a chessboard calibration target to estimate camera pose and render 3D graphics. That works well, but it means you always need the target in the scene.
+Traditional AR systems need a physical anchor to work. In Project 4 we used a chessboard to estimate camera pose and render 3D graphics. That works well but the target always has to be in the scene.
 
-Project 5 gave us deep learning — CNNs and Vision Transformers trained to classify images.
+Project 5 gave us deep learning, CNNs and Vision Transformers trained to classify images.
 
-The question I wanted to answer was: can we combine these two things so that any object the network already knows becomes its own AR anchor? That is exactly what this project does.
-
----
-
-### Slide 3 — System Overview
-
-The pipeline has four steps.
-
-First, we crop a square region from the center of the webcam frame and run it through MobileNetV2 to get a predicted class and a confidence score.
-
-Second, before drawing anything, two checks run. A five-frame majority-vote buffer smooths out flickering predictions by taking the most common class over the last five frames. An entropy-based rejection step then checks how spread out the probability distribution is. If the model is genuinely uncertain about everything it sees, the frame is labelled "Unknown" rather than guessing. This handles cases where no known object is in view.
-
-Third, if the class passes both checks and exceeds the confidence threshold, we estimate a rough object pose using a fixed-depth pinhole camera model with the object assumed to be at about half a meter from the camera.
-
-Fourth, we use OpenCV's projectPoints function to map the eight corners of a 3D box back into pixel coordinates, and we draw the wireframe box along with a floating label tag showing the class name and confidence.
+The question we wanted to answer was: can we combine these two things so that any object the network already knows becomes its own AR anchor? That is what this project does, and the answer is yes.
 
 ---
 
-### Slide 4 — Dataset
+### Slide 3: Data and Pipeline
 
-The dataset has 10 classes and 1,419 images total.
+The dataset has 10 classes and 1419 images total. Five classes, book, cup, keyboard, pen, and phone, were captured with a webcam tool we built. The other five, glasses, headphones, laptop, PS5 controller, and tablet, were downloaded from Bing image search.
 
-Five classes — book, cup, keyboard, pen, and phone — were captured directly with a webcam tool I built, collecting images from different angles, distances, and lighting conditions.
+The pipeline has four steps. First, a center region of interest is cropped and classified by MobileNetV2. Second, a five-frame majority-vote buffer smooths out flickering, and an entropy check labels uncertain frames as Unknown. Third, a fixed-depth pinhole camera model back-projects the ROI into 3D space at 0.5 meters. Fourth, we use OpenCV's projectPoints to draw a 3D wireframe box and a floating label tag showing the class name and confidence.
 
-The other five classes — glasses, headphones, laptop, PS5 controller, and tablet — were downloaded from Bing image search using the icrawler library.
-
-The split is 70% training, 15% validation, and 15% test, with a fixed random seed so the results are fully reproducible. Training images were augmented with horizontal flips, color jitter, and random rotations.
-
-The key observation from the results is that webcam-captured classes consistently outperformed web-only classes. Data quality matters more than quantity.
+The key takeaway from the data is that webcam-captured classes consistently outperformed the web-only ones. Data quality matters more than quantity.
 
 ---
 
-### Slide 5 — Model Architectures
+### Slide 4: Architectures and Results
 
-I implemented and compared three architectures.
+We implemented three architectures.
 
-The first is ObjectCNN — a simple three-layer convolutional network trained from scratch on 64-by-64 RGB images. It achieved near-perfect accuracy on the original five clean webcam classes, which shows that a simple CNN is more than capable when the data is consistent.
+ObjectCNN is a three-layer convolutional network trained from scratch on 64 by 64 images. It hit 79.7% on the 5-class webcam dataset, showing that a simple CNN works well when the data is clean and consistent.
 
-The second is ObjectViT — a minimal Vision Transformer with 8-by-8 patch embeddings and four transformer encoder layers, also trained from scratch. It converges more slowly and needs more data to generalize well.
+ObjectViT is a minimal Vision Transformer with 8 by 8 patch embeddings and four transformer layers, also trained from scratch. It converges more slowly and benefits from more data.
 
-The third — and the one deployed in the live system — is MobileNetV2 with transfer learning. The ImageNet-pretrained backbone provides strong visual features that generalize to new classes even with only 100 to 170 training images per class. This one achieved 88.8% accuracy on the full 10-class dataset.
-
----
-
-### Slide 6 — Results
-
-Three numbers tell the story.
-
-88.8% test accuracy overall on the 10-class held-out set. The system runs at 30 frames per second on an Apple Silicon Mac using MPS acceleration, well above the 15 FPS minimum for a smooth AR experience. Cup and keyboard both hit 100% recall, and headphones reached 100% precision.
-
-The training curves show the model converging steadily through the first 8 epochs and then leveling off, with mild overfitting visible in the later epochs.
+MobileNetV2 uses an ImageNet pretrained backbone with the classifier head replaced and fine-tuned. It achieved 88.8% on the full 10-class dataset and was chosen as the deployed model. The live pipeline runs at 20 to 30 frames per second on an Apple Silicon Mac with MPS acceleration.
 
 ---
 
-### Slide 7 — Where It Struggles
+### Slide 5: Where It Struggles
 
-The confusion matrix shows the full picture.
+The confusion matrix shows the full picture. The weakest class is glasses. The web crawl returned a mix of eyeglasses and drinking glasses under the same label, and the model could not overcome that noise.
 
-The weakest class is glasses. The web crawl returned a mix of eyeglasses and drinking glasses — both under the same label — which introduced noise the model could not overcome.
+Tablet and phone are frequently confused because they are both flat rectangles and look nearly identical at certain angles. Tablet finished at 70% precision, the lowest of all 10 classes.
 
-Tablet and phone are frequently confused because they are both flat rectangles and look nearly identical at certain angles and zoom levels. The AR screenshot I will show next is actually a real example of this: a tablet being classified as a phone.
-
-The root cause for all five weak classes is the same — they were trained only on web images. The five webcam-captured classes all had near-perfect precision and recall.
+The root cause is consistent: all five weak classes were trained only on web images. The five webcam classes all had near-perfect precision and recall.
 
 ---
 
-### Slide 8 — Live Demo
+### Slide 6: Live Demo
 
-This screenshot was captured during the live demo. A tablet is standing upright on a desk, and the model predicts phone at 84% confidence.
+This screenshot was captured during a live demo session. A PS5 DualSense controller is the dominant object in the center region of interest and the model predicts ps5_controller at 85% confidence.
 
-Even though the classification is wrong, the 3D wireframe box and label are drawn correctly around the detected region. This is an important point: the AR rendering pipeline is robust regardless of whether the classification itself is correct. The box always appears properly positioned and scaled relative to the object in the frame.
+The green 3D wireframe box is cleanly anchored to the object with visible front and back faces connected by pillars. The label tag shows the class name and confidence above the front face. The AR rendering pipeline is robust: the box always appears at the correct position and scale relative to whatever is in the ROI, regardless of whether the classification itself is right.
 
-The system was running at about 29.8 FPS during this session with a confidence threshold of 0.60.
-
----
-
-### Slide 9 — Limitations and Next Steps
-
-There are two current limitations we have not yet addressed.
-
-The first is the fixed center ROI. The system only looks at the center of the frame, so objects off to the side are ignored entirely. The second is fixed depth. The 0.5-meter assumption means the 3D box will appear incorrectly scaled if the object is much closer or further away.
-
-Two earlier limitations have already been solved. Prediction flickering is handled by the five-frame majority-vote buffer. The lack of a background class is handled by entropy-based rejection, which lets the system say "Unknown" when nothing familiar is in view.
-
-The most impactful next step would be collecting webcam images for the five web-only classes, which would likely push accuracy above 90%. After that, replacing the fixed center ROI with a sliding-window or YOLO-based detector would allow the system to handle objects anywhere in the frame.
+The session was running at 22 to 30 FPS with a confidence threshold of 0.50.
 
 ---
 
-### Slide 10 — Summary
+### Slide 7: Summary
 
-To summarize: this project built a working real-time markerless AR system that combines the deep learning work from Project 5 with the AR rendering pipeline from Project 4.
+To recap the numbers: 10 object classes, 88.8% test accuracy, 20 to 30 FPS live with no printed markers required.
 
-The system recognizes 10 everyday object classes at 30 frames per second with 88.8% accuracy, and it requires zero printed markers. Any object the network knows becomes its own AR anchor.
+Two limitations remain. The system only looks at the center of the frame so objects off to the side are missed. The fixed 0.5 meter depth assumption means the box scale can be off at very different distances.
+
+Two earlier failure modes have been solved. Prediction flickering is handled by the five-frame majority-vote buffer. The missing background class is handled by entropy-based rejection that shows Unknown when nothing familiar is in view.
 
 Thank you.
 
 ---
 
-*Total estimated speaking time: ~8–10 minutes at a comfortable pace.*
+*Total estimated speaking time: 8 to 10 minutes at a comfortable pace.*

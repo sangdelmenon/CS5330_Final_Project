@@ -48,8 +48,8 @@ model achieved 88.8\% test accuracy on the 10-class dataset and was selected
 as the deployed backbone. When the classifier detects an object with sufficient
 confidence, the system projects a 3D wireframe box onto the object using a
 fixed-depth pinhole camera model and renders a floating label tag showing the
-class name and confidence score. The complete pipeline runs at approximately
-30 frames per second on an Apple Silicon MacBook using MPS acceleration.
+class name and confidence score. The complete pipeline runs at 20 to 30 frames per second on an Apple Silicon
+MacBook using MPS acceleration.
 The system requires no printed calibration target, making any recognized object
 serve as its own AR anchor.
 \end{abstract}
@@ -87,7 +87,7 @@ OpenCV's \texttt{projectPoints} function to map 3D box corners into pixel
 coordinates on each frame.
 
 The main contributions of this work are: (1) a fully functional real-time
-markerless AR system that runs at 30 FPS on consumer hardware; (2) a
+markerless AR system that runs at 20 to 30 FPS on consumer hardware; (2) a
 comparative evaluation of three architectures on a small custom dataset;
 and (3) an analysis of where recognition errors occur and how they affect
 the AR experience.
@@ -259,9 +259,12 @@ K = \begin{bmatrix} f & 0 & c_x \\ 0 & f & c_y \\ 0 & 0 & 1 \end{bmatrix},
 where $w$ and $h$ are the frame width and height, and $c_x$, $c_y$ are the
 principal point at the image center.
 
-The object is assumed to sit at a fixed depth $Z = 0.5\,\text{m}$. From the
-pixel dimensions of the ROI and the pinhole equation, the physical width $W$
-and height $H$ of the bounding box are computed as:
+The object is assumed to sit at a fixed depth $Z = 0.5\,\text{m}$. This is a
+deliberate simplification: the original proposal explored monocular depth cues,
+but a fixed depth was adopted to keep the pipeline real-time without adding a
+second inference model. From the pixel dimensions of the ROI and the pinhole
+equation, the physical width $W$ and height $H$ of the bounding box are computed
+as:
 \begin{equation}
 W = \frac{w_\text{ROI} \cdot Z}{f}, \quad H = \frac{h_\text{ROI} \cdot Z}{f}
 \end{equation}
@@ -428,7 +431,7 @@ objects anywhere in the frame and support multiple objects at once.
 
 Overall this project produced a working real-time markerless AR system that
 met and extended the original goals. The pipeline recognizes 10 everyday
-objects at 30 FPS and renders a 3D wireframe overlay with no printed
+objects at 20 to 30 FPS and renders a 3D wireframe overlay with no printed
 calibration target required. The work builds on the AR pipeline from Project 4
 and the deep learning experiments from Project 5, connecting them in a way
 that makes each more useful than it was on its own.

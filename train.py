@@ -20,6 +20,7 @@
 
 import sys
 import os
+import time
 import argparse
 
 import numpy as np
@@ -169,7 +170,8 @@ def compute_metrics(model, loader, num_classes, device):
 # Plots
 # ---------------------------------------------------------------------------
 
-def plot_training_curves(train_losses, val_losses, train_accs, val_accs, arch):
+def plot_training_curves(train_losses, val_losses, train_accs, val_accs, arch,
+                         save_path='training_curves.png'):
     fig, axes = plt.subplots(1, 2, figsize=(13, 4))
     epochs = range(1, len(train_losses) + 1)
 
@@ -190,12 +192,12 @@ def plot_training_curves(train_losses, val_losses, train_accs, val_accs, arch):
     axes[1].grid(True)
 
     plt.tight_layout()
-    plt.savefig('training_curves.png', dpi=150)
-    plt.show()
-    print('Saved training_curves.png')
+    plt.savefig(save_path, dpi=150)
+    plt.close()
+    print('Saved', save_path)
 
 
-def plot_confusion_matrix(conf, classes, arch):
+def plot_confusion_matrix(conf, classes, arch, save_path='confusion_matrix.png'):
     fig, ax = plt.subplots(figsize=(max(6, len(classes)), max(5, len(classes) - 1)))
     im = ax.imshow(conf, cmap='Blues')
     ax.set_xticks(range(len(classes)))
@@ -213,9 +215,9 @@ def plot_confusion_matrix(conf, classes, arch):
                     fontsize=10)
     plt.colorbar(im, ax=ax)
     plt.tight_layout()
-    plt.savefig('confusion_matrix.png', dpi=150)
-    plt.show()
-    print('Saved confusion_matrix.png')
+    plt.savefig(save_path, dpi=150)
+    plt.close()
+    print('Saved', save_path)
 
 
 # ---------------------------------------------------------------------------
@@ -267,15 +269,26 @@ def main(argv):
     train_accs,   val_accs   = [], []
     best_val_acc = 0.0
 
+    os.makedirs('Figures', exist_ok=True)
+    arch_tag  = args.model.upper()
+    curves_path = os.path.join('Figures', '{}_Loss_Accuracy.png'.format(arch_tag))
+    matrix_path = os.path.join('Figures', '{}_ConfusionMatrix.png'.format(arch_tag))
+
     print('\nTraining for {} epochs...'.format(args.epochs))
-    print('{:<6} {:>10} {:>10} {:>10} {:>10}'.format(
-        'Epoch', 'tr_loss', 'tr_acc%', 'vl_loss', 'vl_acc%'))
-    print('-' * 50)
+    print('{:<6} {:>10} {:>10} {:>10} {:>10} {:>8}'.format(
+        'Epoch', 'tr_loss', 'tr_acc%', 'vl_loss', 'vl_acc%', 'secs'))
+    print('-' * 58)
+
+    epoch_times = []
+    t_train_start = time.time()
 
     for epoch in range(1, args.epochs + 1):
+        t0 = time.time()
         tr_loss, tr_acc = train_epoch(model, train_loader, optimizer, device)
         vl_loss, vl_acc = eval_epoch(model, val_loader, device)
         scheduler.step()
+        elapsed = time.time() - t0
+        epoch_times.append(elapsed)
 
         train_losses.append(tr_loss); val_losses.append(vl_loss)
         train_accs.append(tr_acc);    val_accs.append(vl_acc)
@@ -291,13 +304,18 @@ def main(argv):
             }, args.output)
             flag = '  <- best'
 
-        print('{:<6d} {:>10.4f} {:>9.1f}% {:>10.4f} {:>9.1f}%{}'.format(
-            epoch, tr_loss, tr_acc, vl_loss, vl_acc, flag))
+        print('{:<6d} {:>10.4f} {:>9.1f}% {:>10.4f} {:>9.1f}% {:>7.1f}s{}'.format(
+            epoch, tr_loss, tr_acc, vl_loss, vl_acc, elapsed, flag))
 
+    total_time = time.time() - t_train_start
+    mean_epoch = sum(epoch_times) / len(epoch_times)
     print('\nBest validation accuracy: {:.1f}%'.format(best_val_acc))
+    print('Total training time: {:.1f}s  |  Mean per epoch: {:.1f}s'.format(
+        total_time, mean_epoch))
     print('Model saved to:', args.output)
 
-    plot_training_curves(train_losses, val_losses, train_accs, val_accs, args.model)
+    plot_training_curves(train_losses, val_losses, train_accs, val_accs,
+                         args.model, save_path=curves_path)
 
     # -----------------------------------------------------------------------
     # Test set evaluation
@@ -324,7 +342,7 @@ def main(argv):
     print('-' * 40)
     print('{:<15s}  {:>9.1f}%  {:>9.1f}%'.format('Mean', mean_p, mean_r))
 
-    plot_confusion_matrix(conf_matrix, classes, args.model)
+    plot_confusion_matrix(conf_matrix, classes, args.model, save_path=matrix_path)
 
 
 if __name__ == '__main__':
