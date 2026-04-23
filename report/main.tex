@@ -43,7 +43,7 @@ scratch, a minimal Vision Transformer (ViT) trained from scratch, and a
 MobileNetV2 backbone fine-tuned with transfer learning. A dataset of
 approximately 1400 images across 10 object classes was collected using a
 combination of webcam captures and web-downloaded images. The MobileNetV2
-model achieved 84.1\% test accuracy on the 10-class dataset and was selected
+model achieved 88.8\% test accuracy on the 10-class dataset and was selected
 as the deployed backbone. When the classifier detects an object with sufficient
 confidence, the system projects a 3D wireframe box onto the object using a
 fixed-depth pinhole camera model and renders a floating label tag showing the
@@ -283,13 +283,16 @@ the live demo.
 
 \subsection{CNN Results (5 Classes)}
 
-The CNN trained on the 5-class dataset converged very quickly. Validation
-accuracy exceeded 95\% by epoch 3 and remained near 100\% for the remainder
-of training (Fig.~\ref{fig:cnn_curves}). The confusion matrix
-(Fig.~\ref{fig:cnn_cm}) shows near-perfect classification with no
-cross-class errors. This result reflects the clean, consistent nature of the
-webcam-captured dataset where all classes are visually distinct and were
-collected under similar conditions.
+The CNN trained on the 5-class dataset reached a test accuracy of 79.7\%
+(Fig.~\ref{fig:cnn_curves}, Fig.~\ref{fig:cnn_cm}). Validation accuracy
+plateaued near 68\% during training, with the best checkpoint saved at epoch
+14. The relatively modest result compared to a simpler augmentation regime
+reflects the aggressive augmentation pipeline applied during training, which
+includes random perspective distortion, random erasing, and color jitter.
+These transforms add useful variance for the larger 10-class model but make
+convergence harder for the smaller CNN on a clean 5-class dataset. The
+confusion matrix shows most errors occurring between visually similar objects
+at different scales.
 
 \begin{figure}[h]
   \centering
@@ -308,10 +311,10 @@ collected under similar conditions.
 \subsection{MobileNetV2 Results (10 Classes)}
 
 The MobileNetV2 model trained on the full 10-class dataset achieved a test
-accuracy of 84.1\%. Training and validation accuracy improved steadily through
-the first 8 epochs and then leveled off (Fig.~\ref{fig:mobile_curves}). Mild
+accuracy of 88.8\%. Training and validation accuracy improved steadily through
+the first 7 epochs and then leveled off (Fig.~\ref{fig:mobile_curves}). Mild
 overfitting is visible in the later epochs where training accuracy continues
-to climb while validation accuracy plateaus near 87\%.
+to climb past 97\% while validation accuracy plateaus near 88\%.
 
 \begin{figure}[h]
   \centering
@@ -339,29 +342,29 @@ summarizes per-class performance.
 \toprule
 Class & Precision & Recall \\
 \midrule
-book           & 89.7\% & 96.3\% \\
-cup            & 87.0\% & 95.2\% \\
-glasses        & 41.2\% & 70.0\% \\
-headphones     & 87.5\% & 70.0\% \\
-keyboard       & 90.0\% & 93.1\% \\
-laptop         & 81.8\% & 75.0\% \\
-pen            & 90.5\% & 90.5\% \\
-phone          & 87.9\% & 90.6\% \\
-ps5\_controller & 100.0\% & 83.3\% \\
-tablet         & 83.3\% & 62.5\% \\
+book           & 95.2\% & 83.3\% \\
+cup            & 85.7\% & 100.0\% \\
+glasses        & 87.5\% & 87.5\% \\
+headphones     & 100.0\% & 63.6\% \\
+keyboard       & 92.0\% & 100.0\% \\
+laptop         & 89.5\% & 81.0\% \\
+pen            & 92.0\% & 88.5\% \\
+phone          & 87.5\% & 96.6\% \\
+ps5\_controller & 95.0\% & 95.0\% \\
+tablet         & 70.0\% & 77.8\% \\
 \midrule
-Mean           & 83.9\% & 82.7\% \\
-Overall Accuracy & \multicolumn{2}{c}{84.1\%} \\
+Mean           & 89.4\% & 87.3\% \\
+Overall Accuracy & \multicolumn{2}{c}{88.8\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Classes with webcam-captured training data (book, cup, keyboard, pen, phone)
-consistently outperformed those with only web-downloaded images. Phone was the
-strongest class with 29 out of 30 test images correctly classified. Glasses was
-the weakest class: only 7 out of 10 test images were correctly classified, and
-the web crawl returned a mix of eyeglasses and drinking glasses, introducing
-label noise.
+The results show strong performance across most classes. Cup and keyboard both
+achieved 100\% recall, and headphones reached 100\% precision. Glasses improved
+dramatically to 87.5\% precision and recall, suggesting the model learned to
+distinguish eyeglasses from other objects despite the noisy web crawl data.
+Tablet remained the weakest class with 70\% precision and 77.8\% recall, as
+flat rectangular devices are inherently difficult to separate at certain angles.
 
 \subsection{Live AR Performance}
 
@@ -385,19 +388,18 @@ Fig.~\ref{fig:ar_screenshot} shows a screenshot captured during the live demo.
 Transfer learning with MobileNetV2 proved to be the most practical approach
 for building a real-time object classifier on a small custom dataset. The
 pretrained ImageNet backbone provides general visual features that carry over
-well to everyday objects even with only 100 to 170 training images per class.
-Training from scratch worked well for the CNN on the clean 5-class webcam
-dataset, reaching near-perfect accuracy, but performance dropped noticeably
-on the noisier 10-class data. The ViT was the slowest to converge and would
+well to everyday objects even with only 100 to 170 training images per class,
+reaching 88.8\% test accuracy across 10 classes.
+Training from scratch with the CNN achieved 79.7\% on the 5-class dataset,
+which is reasonable but reflects the difficulty introduced by the aggressive
+augmentation pipeline. The ViT was the slowest to converge and would
 benefit from a larger dataset.
 
-The biggest source of error in the 10-class model was the quality of the
-web-downloaded images rather than any weakness in the architecture. Glasses
-was the hardest class because the Bing crawl returned a mix of eyeglasses
-and drinking glasses under the same label. Tablet and phone were frequently
-confused because both are flat rectangles and look almost identical at
-certain angles. Collecting dedicated webcam images for those five web-only
-classes under controlled conditions would likely close most of that gap.
+The biggest remaining source of error is the tablet class at 70\% precision,
+as flat rectangular devices are inherently ambiguous at certain angles and
+distances. Most other classes performed well, with glasses recovering strongly
+to 87.5\% despite the noisy web crawl data that initially caused confusion
+between eyeglasses and drinking glasses.
 
 The AR system behaved well within its design constraints. The fixed-depth
 assumption can cause the 3D box to appear slightly too large or small at

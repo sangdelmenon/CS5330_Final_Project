@@ -58,7 +58,7 @@ The first is ObjectCNN — a simple three-layer convolutional network trained fr
 
 The second is ObjectViT — a minimal Vision Transformer with 8-by-8 patch embeddings and four transformer encoder layers, also trained from scratch. It converges more slowly and needs more data to generalize well.
 
-The third — and the one deployed in the live system — is MobileNetV2 with transfer learning. The ImageNet-pretrained backbone provides strong visual features that generalize to new classes even with only 100 to 170 training images per class. This one achieved 84.1% accuracy on the full 10-class dataset.
+The third — and the one deployed in the live system — is MobileNetV2 with transfer learning. The ImageNet-pretrained backbone provides strong visual features that generalize to new classes even with only 100 to 170 training images per class. This one achieved 88.8% accuracy on the full 10-class dataset.
 
 ---
 
@@ -66,7 +66,7 @@ The third — and the one deployed in the live system — is MobileNetV2 with tr
 
 Three numbers tell the story.
 
-84.1% test accuracy overall on the 10-class held-out set. The system runs at 30 frames per second on an Apple Silicon Mac using MPS acceleration, well above the 15 FPS minimum for a smooth AR experience. And the strongest individual class was phone, where 29 out of 30 test images were classified correctly.
+88.8% test accuracy overall on the 10-class held-out set. The system runs at 30 frames per second on an Apple Silicon Mac using MPS acceleration, well above the 15 FPS minimum for a smooth AR experience. Cup and keyboard both hit 100% recall, and headphones reached 100% precision.
 
 The training curves show the model converging steadily through the first 8 epochs and then leveling off, with mild overfitting visible in the later epochs.
 
@@ -110,7 +110,7 @@ The most impactful next step would be collecting webcam images for the five web-
 
 To summarize: this project built a working real-time markerless AR system that combines the deep learning work from Project 5 with the AR rendering pipeline from Project 4.
 
-The system recognizes 10 everyday object classes at 30 frames per second with 84.1% accuracy, and it requires zero printed markers. Any object the network knows becomes its own AR anchor.
+The system recognizes 10 everyday object classes at 30 frames per second with 88.8% accuracy, and it requires zero printed markers. Any object the network knows becomes its own AR anchor.
 
 Thank you.
 
