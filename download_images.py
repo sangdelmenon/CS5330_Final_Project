@@ -85,7 +85,6 @@ def download_class(cls, data_dir, n_images):
     tmp_crawler.crawl(keyword=query, max_num=n_images,
                       file_idx_offset=0)
 
-    # Rename and move into the class directory with sequential numbering
     downloaded = sorted(f for f in os.listdir(tmp_dir)
                         if f.lower().endswith(('.jpg', '.jpeg', '.png')))
     moved = 0

@@ -243,7 +243,6 @@ def main(argv):
     val_loader   = DataLoader(val_set,   batch_size=args.batch, shuffle=False, num_workers=0)
     test_loader  = DataLoader(test_set,  batch_size=args.batch, shuffle=False, num_workers=0)
 
-    # Build model
     if args.model == 'vit':
         model = ObjectViT(num_classes).to(device)
     elif args.model == 'mobilenet':

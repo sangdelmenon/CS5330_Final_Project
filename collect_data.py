@@ -66,7 +66,6 @@ def draw_ui(frame, classes, active_idx, data_dir, auto_capture, roi_box):
     x1, y1, x2, y2 = roi_box
     h = frame.shape[0]
 
-    # ROI rectangle – green normally, orange in auto-capture mode
     box_color = (0, 140, 255) if auto_capture else (0, 255, 0)
     cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
 
@@ -122,7 +121,6 @@ def run_collection(classes, data_dir, camera_idx):
         display = frame.copy()
         draw_ui(display, classes, active_idx, data_dir, auto_capture, roi_box)
 
-        # Auto-capture: save one frame every AUTO_INTERVAL frames
         if auto_capture and frame_num % AUTO_INTERVAL == 0:
             roi = frame[y1:y2, x1:x2]
             n   = count_images(data_dir, classes[active_idx])

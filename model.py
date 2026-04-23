@@ -70,7 +70,6 @@ class _PatchEmbed(nn.Module):
     def __init__(self, img_size=IMG_SIZE, patch_size=8, in_ch=3, embed_dim=128):
         super().__init__()
         self.n_patches = (img_size // patch_size) ** 2
-        # A single strided Conv2d is the standard efficient patch embedding
         self.proj = nn.Conv2d(in_ch, embed_dim,
                               kernel_size=patch_size, stride=patch_size)
 

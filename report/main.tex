@@ -22,6 +22,13 @@
     Boston, MA, USA \\
     NUID: 002524579
   }
+  \and
+  \IEEEauthorblockN{Raj Gupta}
+  \IEEEauthorblockA{
+    \textit{Khoury College of Computer Sciences} \\
+    \textit{Northeastern University} \\
+    Boston, MA, USA
+  }
 }
 
 \maketitle
@@ -225,12 +232,23 @@ validation accuracy was saved and reloaded for final evaluation.
 
 The live AR system processes one webcam frame at a time. A square region of
 interest (ROI) centered in the frame is cropped and resized to the input
-dimensions required by the deployed model. The crop is classified and if the
-top predicted class exceeds a configurable confidence threshold (default 0.60)
-the AR overlay is drawn.
+dimensions required by the deployed model. Before drawing any overlay, two
+checks are applied. First, a temporal smoothing buffer retains the last five
+predicted class indices and takes the majority vote, which prevents the label
+from flickering between frames when the classifier is close to a decision
+boundary. Second, an entropy-based rejection step computes the normalised
+Shannon entropy of the softmax probability distribution:
+\begin{equation}
+H_\text{norm} = \frac{-\sum_i p_i \log p_i}{\log N}
+\end{equation}
+where $N$ is the number of classes. When $H_\text{norm}$ exceeds 0.85 the
+frame is labelled ``Unknown,'' indicating that no object the model has seen
+before is present. This removes the need for a dedicated background class
+while still allowing the system to abstain on unfamiliar scenes.
 
-The 3D overlay uses a fixed-depth pinhole camera model. The camera intrinsic
-matrix is estimated from the frame dimensions:
+If the top class passes both checks and exceeds the confidence threshold, the
+3D overlay is drawn. The overlay uses a fixed-depth pinhole camera model. The
+camera intrinsic matrix is estimated from the frame dimensions:
 \begin{equation}
 K = \begin{bmatrix} f & 0 & c_x \\ 0 & f & c_y \\ 0 & 0 & 1 \end{bmatrix},
 \quad f = 0.85 \cdot \max(w, h)
@@ -245,12 +263,10 @@ and height $H$ of the bounding box are computed as:
 W = \frac{w_\text{ROI} \cdot Z}{f}, \quad H = \frac{h_\text{ROI} \cdot Z}{f}
 \end{equation}
 Box depth is set to $D = 0.45 \cdot \min(W, H)$. The 8 corners of this 3D box
-are defined in the object coordinate frame aligned with the camera. They are
-projected to pixel coordinates using \texttt{cv2.projectPoints} with identity
-rotation and translation. The 12 edges of the box (front face, back face, four
-connecting pillars) are drawn as colored lines, with each class assigned a
-unique color. A semi-transparent label tag showing the class name and
-confidence score is placed above the top edge of the front face using
+are projected to pixel coordinates using \texttt{cv2.projectPoints} with
+identity rotation and translation. The 12 edges of the box are drawn as colored
+lines with each class assigned a unique color, and a semi-transparent label tag
+showing the class name and confidence score is placed above the front face using
 alpha blending.
 
 % -----------------------------------------------------------------------
@@ -366,43 +382,48 @@ Fig.~\ref{fig:ar_screenshot} shows a screenshot captured during the live demo.
 % -----------------------------------------------------------------------
 \section{Discussion and Summary}
 
-The results confirm that transfer learning with MobileNetV2 is a practical
-approach for building a real-time object classifier on a small custom dataset.
-The pretrained ImageNet backbone provides general visual features that transfer
-well to everyday objects even when only 100--170 training images per class are
-available. Training from scratch with the CNN and ViT is viable on clean,
-consistent data as shown by the near-perfect CNN results on the 5-class dataset,
-but performance drops when the data is noisier and more varied.
+Transfer learning with MobileNetV2 proved to be the most practical approach
+for building a real-time object classifier on a small custom dataset. The
+pretrained ImageNet backbone provides general visual features that carry over
+well to everyday objects even with only 100 to 170 training images per class.
+Training from scratch worked well for the CNN on the clean 5-class webcam
+dataset, reaching near-perfect accuracy, but performance dropped noticeably
+on the noisier 10-class data. The ViT was the slowest to converge and would
+benefit from a larger dataset.
 
-The biggest source of error in the 10-class model is the quality of the
-web-downloaded images, not the architecture itself. Glasses was confused with
-headphones because drinking glasses and eyeglasses share the same label in the
-crawled data. Tablet was confused with phone because flat rectangular devices
-look similar at certain angles and sizes. These confusions would likely
-disappear if webcam images were collected for the five web-only classes under
-the same conditions used for the original five.
+The biggest source of error in the 10-class model was the quality of the
+web-downloaded images rather than any weakness in the architecture. Glasses
+was the hardest class because the Bing crawl returned a mix of eyeglasses
+and drinking glasses under the same label. Tablet and phone were frequently
+confused because both are flat rectangles and look almost identical at
+certain angles. Collecting dedicated webcam images for those five web-only
+classes under controlled conditions would likely close most of that gap.
 
-The AR system works well within its design constraints. The fixed-depth
-assumption means the 3D box will appear too large or too small if the object
-is far from the assumed 0.5 m depth, but for a typical desktop setup the
-overlay looks convincing. The screenshot in Fig.~\ref{fig:ar_screenshot}
-shows a real failure case: a tablet is classified as a phone, yet the AR
-box is still drawn correctly around the detected region. This illustrates
-that the rendering pipeline itself is robust even when the classification
-is wrong.
+The AR system behaved well within its design constraints. The fixed-depth
+assumption can cause the 3D box to appear slightly too large or small at
+unusual distances, but the overlay looks convincing in a normal desktop
+scenario. Fig.~\ref{fig:ar_screenshot} shows a real failure case where a
+tablet is classified as a phone, yet the wireframe box is still drawn
+correctly around the object. This confirms that the rendering pipeline is
+robust regardless of whether the classification itself is right.
 
-Future improvements would include collecting webcam images for the five
-web-only classes, adding a background class so the system can abstain when
-no known object is present, and replacing the fixed center ROI with a
-sliding-window or attention-based detector to support objects anywhere in
-the frame. Adding temporal smoothing over a short history buffer would also
-reduce flickering in the live display.
+Two refinements were implemented to improve the live experience beyond the
+basic pipeline. A five-frame majority-vote buffer removes the label flicker
+that occurs when the model is near a decision boundary. An entropy-based
+rejection step flags frames with a highly uncertain probability distribution
+as ``Unknown,'' giving the system a way to abstain when no familiar object
+is in view without requiring a dedicated background class.
 
-In summary, this project produced a working real-time markerless AR system
-that meets all the original goals. The pipeline recognizes 10 everyday objects
-at 30 FPS and renders a 3D wireframe overlay without any printed calibration
-target. The work builds directly on both the AR pipeline from Project 4 and
-the deep learning experiments from Project 5, extending both in concrete ways.
+The remaining limitation worth addressing is the fixed center ROI. Replacing
+it with a sliding-window or learned detector would allow the system to handle
+objects anywhere in the frame and support multiple objects at once.
+
+Overall this project produced a working real-time markerless AR system that
+met and extended the original goals. The pipeline recognizes 10 everyday
+objects at 30 FPS and renders a 3D wireframe overlay with no printed
+calibration target required. The work builds on the AR pipeline from Project 4
+and the deep learning experiments from Project 5, connecting them in a way
+that makes each more useful than it was on its own.
 
 % -----------------------------------------------------------------------
 \begin{thebibliography}{1}

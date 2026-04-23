@@ -1,9 +1,8 @@
-# CS5330 Final Project — Real-Time Object Recognition and Augmented Reality Fusion
+# CS5330 Final Project: Real-Time Object Recognition and Augmented Reality Fusion
 
-**Student:** Sangeeth Deleep Menon
-**NUID:** 002524579
+**Students:** Sangeeth Deleep Menon (NUID: 002524579) and Raj Gupta
 **Program:** MSCS Boston, Section 03 (CRN 40669, Online)
-**Course:** CS5330 — Pattern Recognition and Computer Vision, Spring 2026
+**Course:** CS5330 Pattern Recognition and Computer Vision, Spring 2026
 
 **Demo video:** *(add YouTube/Google Drive URL here after recording)*
 **Dataset:** *(add Google Drive URL here if uploading)*
@@ -36,14 +35,14 @@
 
 This project builds a **markerless real-time object recognition and augmented reality system** by combining two major themes from earlier in the course:
 
-- **Project 4** — AR rendering pipeline using a calibration target (chessboard) to estimate camera pose and overlay 3D graphics
-- **Project 5** — Deep learning for image recognition using CNNs and Vision Transformers trained on MNIST and Greek letters
+- **Project 4:** AR rendering pipeline using a calibration target (chessboard) to estimate camera pose and overlay 3D graphics
+- **Project 5:** Deep learning for image recognition using CNNs and Vision Transformers trained on MNIST and Greek letters
 
-The key novelty here is that the system **does not require any printed marker or calibration target**. Instead, any everyday object that the network has learned to recognise becomes its own AR anchor. When the classifier detects a known object with sufficient confidence, the system:
+The key novelty is that the system does not require any printed marker or calibration target. Any everyday object that the network has learned to recognise becomes its own AR anchor. When the classifier detects a known object with sufficient confidence, the system:
 
 1. Estimates a rough object pose using the detected bounding box and a fixed-depth pinhole camera model
-2. Projects a **3D wireframe box** onto the object using `cv2.projectPoints`
-3. Renders a **floating semi-transparent label tag** with the class name and confidence score above the object — all in real time at interactive frame rates
+2. Projects a 3D wireframe box onto the object using `cv2.projectPoints`
+3. Renders a floating semi-transparent label tag with the class name and confidence score above the object, all in real time at interactive frame rates
 
 ---
 
