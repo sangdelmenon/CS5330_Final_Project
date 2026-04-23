@@ -44,11 +44,9 @@ MobileNetV2 uses an ImageNet pretrained backbone with the classifier head replac
 
 ### Slide 5: Where It Struggles
 
-The confusion matrix shows the full picture. The weakest class is glasses. The web crawl returned a mix of eyeglasses and drinking glasses under the same label, and the model could not overcome that noise.
+The confusion matrix shows where the model struggles most. Tablet is the weakest class at 70% precision. Flat rectangular devices are hard to separate from phones and laptops at certain angles and zoom levels. Headphones has perfect precision but only 63.6% recall, meaning the model is cautious about predicting it but often misses it.
 
-Tablet and phone are frequently confused because they are both flat rectangles and look nearly identical at certain angles. Tablet finished at 70% precision, the lowest of all 10 classes.
-
-The root cause is consistent: all five weak classes were trained only on web images. The five webcam classes all had near-perfect precision and recall.
+The web-crawled classes generally had more quality variance than the webcam-captured ones, but it is not a clean webcam-versus-web story. PS5 controller finished at 95% on both metrics and glasses recovered to 87.5%, both on web data only. The main driver of errors is visual ambiguity at class boundaries, not data source alone.
 
 ---
 

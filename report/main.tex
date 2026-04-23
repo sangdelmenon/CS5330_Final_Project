@@ -293,7 +293,7 @@ Table~\ref{tab:model_comparison} summarizes the three architectures.
 \toprule
 Model & Classes & Parameters & Test Accuracy \\
 \midrule
-ObjectCNN     & 5  & 2.11M & 79.7\% \\
+ObjectCNN     & 5  & 2.19M & 79.7\% \\
 ObjectViT     & 10 & 0.83M & 43.2\% \\
 MobileNetV2   & 10 & 2.24M & \textbf{88.8\%} \\
 \bottomrule
@@ -431,7 +431,7 @@ aggressive augmentation pipeline but is otherwise limited by the small number
 of classes. The ViT reached only 43.2\% on the 10-class dataset when trained
 from scratch, consistent with the literature finding that transformers require
 significantly more data than CNNs to learn useful representations. The
-parameter count (0.83M for ViT versus 2.11M for the CNN) was not the limiting
+parameter count (0.83M for ViT versus 2.19M for the CNN) was not the limiting
 factor; the lack of pretrained features was.
 
 The biggest remaining source of error is the tablet class at 70\% precision,
