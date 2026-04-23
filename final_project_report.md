@@ -34,7 +34,7 @@ The final dataset has 1419 images across the 10 classes.
 | ps5_controller | 102 |
 | tablet | 138 |
 
-All images were split into 70% for training, 15% for validation, and 15% for testing using a fixed random seed for reproducibility. Training images were augmented with random horizontal flips, color jitter, perspective distortion, random erasing, and rotations up to 25 degrees. Validation and test images were not augmented.
+All images were split into 70% for training, 15% for validation, and 15% for testing using a fixed random seed for reproducibility. Training images were augmented with random horizontal and vertical flips, color jitter, random perspective distortion, random grayscale, random erasing, and rotations up to 25 degrees. Validation and test images were not augmented.
 
 The two groups of classes differ in data quality. The first five have webcam photos taken in consistent conditions with the object centered in frame. The later five rely entirely on web images, which vary more in background, angle, and lighting. This difference has a measurable impact on accuracy.
 
@@ -138,7 +138,7 @@ The screenshot below was captured during a live session.
 
 ![AR Screenshot](ar_screenshot.png)
 
-The PS5 DualSense controller is in frame and the model correctly predicts ps5_controller at 85% confidence. The green 3D wireframe box is clearly anchored to the object with visible front and back faces connected by pillars. The label tag reads "ps5_controller 85%" and is positioned above the front face. This is one of the web-only classes that previously performed inconsistently, so correctly identifying it at high confidence demonstrates the strength of the retrained model.
+The center ROI contains a PS5 DualSense controller as the dominant object and the model predicts ps5_controller at 85% confidence. The green 3D wireframe box is anchored to the ROI with visible front and back faces connected by pillars. The label tag reads "ps5_controller 85%" and is positioned above the front face. The controller is one of the web-only classes, so a confident correct prediction at 85% reflects the strength of the retrained MobileNetV2 backbone on images it was not explicitly fine-tuned on.
 
 ---
 

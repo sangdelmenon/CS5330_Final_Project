@@ -181,10 +181,12 @@ Total & 1419 \\
 \end{tabular}
 \end{table}
 
-Training images were augmented with random horizontal flips, color jitter
-(brightness, contrast, saturation, and hue all varied by up to 20\%), and
-random rotations up to $\pm15$ degrees. Validation and test images were not
-augmented.
+Training images were augmented with random horizontal flips, random vertical
+flips ($p=0.1$), color jitter (brightness $\pm0.4$, contrast $\pm0.4$,
+saturation $\pm0.3$, hue $\pm0.1$), random rotations up to $\pm25$ degrees,
+random perspective distortion (scale 0.4, $p=0.5$), random grayscale
+($p=0.1$), and random erasing ($p=0.3$, area 2--20\%). Validation and test
+images were not augmented.
 
 \subsection{Model Architectures}
 
@@ -369,17 +371,19 @@ flat rectangular devices are inherently difficult to separate at certain angles.
 
 \subsection{Live AR Performance}
 
-The complete inference and rendering pipeline ran at approximately 29--30 FPS
-during the live demo on an Apple M-series chip with MPS acceleration enabled.
-This is well above the 15 FPS minimum required for a smooth AR experience.
+The complete inference and rendering pipeline ran at approximately 20--30 FPS
+during the live demo on an Apple M-series chip with MPS acceleration enabled,
+varying with scene complexity. This is well above the 15 FPS minimum required
+for a smooth AR experience.
 Fig.~\ref{fig:ar_screenshot} shows a screenshot captured during the live demo.
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=\columnwidth]{ar_screenshot.png}
-  \caption{AR overlay during a live demo session. A tablet is in frame and
-  the model predicts ``phone'' at 84\% confidence, illustrating the
-  tablet-to-phone confusion seen in the confusion matrix.}
+  \caption{AR overlay during a live demo session. A PS5 DualSense controller
+  is in frame and the model predicts ``ps5\_controller'' at 85\% confidence.
+  The green wireframe box is correctly anchored to the object with the label
+  tag visible above the front face.}
   \label{fig:ar_screenshot}
 \end{figure}
 
@@ -405,10 +409,11 @@ between eyeglasses and drinking glasses.
 The AR system behaved well within its design constraints. The fixed-depth
 assumption can cause the 3D box to appear slightly too large or small at
 unusual distances, but the overlay looks convincing in a normal desktop
-scenario. Fig.~\ref{fig:ar_screenshot} shows a real failure case where a
-tablet is classified as a phone, yet the wireframe box is still drawn
-correctly around the object. This confirms that the rendering pipeline is
-robust regardless of whether the classification itself is right.
+scenario. Fig.~\ref{fig:ar_screenshot} shows a representative live frame
+where the PS5 controller is correctly identified and the wireframe box is
+cleanly anchored to the object. Even in cases where the classification is
+wrong, the rendering pipeline remains robust: the box and label are always
+drawn at the correct position and scale relative to the center ROI.
 
 Two refinements were implemented to improve the live experience beyond the
 basic pipeline. A five-frame majority-vote buffer removes the label flicker
