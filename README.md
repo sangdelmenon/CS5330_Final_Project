@@ -1,6 +1,6 @@
 # CS5330 Final Project: Real-Time Object Recognition and Augmented Reality Fusion
 
-**Students:** Sangeeth Deleep Menon (NUID: 002524579) and Raj Gupta
+**Students:** Sangeeth Deleep Menon (NUID: 002524579) and Raj Gupta (NUID: 002068701)
 **Program:** MSCS Boston, Section 03 (CRN 40669, Online)
 **Course:** CS5330 Pattern Recognition and Computer Vision, Spring 2026
 

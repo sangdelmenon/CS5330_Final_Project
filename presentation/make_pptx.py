@@ -143,7 +143,7 @@ box(s, 1.0, 3.0, 11.33, 0.6,
     text='Using deep learning to turn any everyday object into an augmented reality anchor',
     fontsize=16, color=GRAY, align=PP_ALIGN.CENTER)
 box(s, 0, 4.2, 13.33, 0.5,
-    text='Sangeeth Deleep Menon  ·  NUID 002524579\nKhoury College of Computer Sciences  ·  Northeastern University',
+    text='Sangeeth Deleep Menon  ·  NUID 002524579  ·  Raj Gupta  ·  NUID 002068701\nKhoury College of Computer Sciences  ·  Northeastern University',
     fontsize=13, color=GRAY, align=PP_ALIGN.CENTER)
 
 # ── SLIDE 2 — The Problem ────────────────────────────────────────────────────

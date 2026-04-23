@@ -1,6 +1,6 @@
 # Sangeeth Deleep Menon
 # NUID: 002524579
-# Raj Gupta
+# Raj Gupta (NUID: 002068701)
 # CS5330 Final Project - Real-Time AR Object Recognition
 # Spring 2026
 #

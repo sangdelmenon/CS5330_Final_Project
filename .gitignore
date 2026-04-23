@@ -15,7 +15,6 @@ object_model.pth
 # Generated plots and screenshots
 training_curves.png
 confusion_matrix.png
-ar_screenshot.png
 live_capture.png
 
 # Collected training data (large; add manually if desired)
