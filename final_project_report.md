@@ -122,7 +122,7 @@ MobileNetV2 achieved 88.8% overall test accuracy on the 10-class held-out set.
 | tablet | 70.0% | 77.8% |
 | **Mean** | **89.4%** | **87.3%** |
 
-Strong performers include cup and keyboard at 100% recall, and headphones at 100% precision. Glasses improved significantly to 87.5% on both metrics, showing the model learned to distinguish eyeglasses despite the noisy web crawl data. Tablet remained the weakest class at 70% precision, as flat rectangular devices are hard to separate from phones and laptops at certain angles.
+Strong performers include cup and keyboard at 100% recall, and headphones at 100% precision. Glasses improved significantly to 87.5% on both metrics under MobileNetV2, compared to near-zero precision under the from-scratch ViT, showing the pretrained backbone learned to distinguish eyeglasses despite the noisy web crawl data. Tablet remained the weakest class at 70% precision, as flat rectangular devices are hard to separate from phones and laptops at certain angles.
 
 ---
 

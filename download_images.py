@@ -1,5 +1,5 @@
-# Sangeeth Deleep Menon
-# NUID: 002524579
+# Sangeeth Deleep Menon (NUID: 002524579)
+# Raj Gupta (NUID: 002068701)
 # CS5330 Final Project - Web Image Downloader
 # Spring 2026
 #
@@ -65,12 +65,6 @@ def download_class(cls, data_dir, n_images):
 
     print('  Downloading {} images for "{}" (query: "{}")'.format(
         n_images, cls, query))
-
-    crawler = BingImageCrawler(
-        storage={'root_dir': cls_dir},
-        downloader_threads=4,
-        log_level='ERROR',   # suppress verbose icrawler output
-    )
 
     # icrawler names files 000001.jpg etc.; we use a temp sub-dir then rename
     # to keep consistent numbering with webcam images

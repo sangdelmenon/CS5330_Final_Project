@@ -1,5 +1,5 @@
-# Sangeeth Deleep Menon
-# NUID: 002524579
+# Sangeeth Deleep Menon (NUID: 002524579)
+# Raj Gupta (NUID: 002068701)
 # CS5330 Final Project - Model Training and Evaluation
 # Spring 2026
 #

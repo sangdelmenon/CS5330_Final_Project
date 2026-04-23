@@ -266,10 +266,13 @@ W = \frac{w_\text{ROI} \cdot Z}{f}, \quad H = \frac{h_\text{ROI} \cdot Z}{f}
 \end{equation}
 Box depth is set to $D = 0.45 \cdot \min(W, H)$. The 8 corners of this 3D box
 are projected to pixel coordinates using \texttt{cv2.projectPoints} with
-identity rotation and translation. The 12 edges of the box are drawn as colored
-lines with each class assigned a unique color, and a semi-transparent label tag
-showing the class name and confidence score is placed above the front face using
-alpha blending.
+identity rotation and translation. Because the object is assumed to sit on the
+optical axis with zero rotation, the back face projects almost concentrically
+with the front face at this depth; only a slight perspective scaling
+differentiates them. The 12 edges of the box are drawn as colored lines with
+each class assigned a unique color, and a semi-transparent label tag showing the
+class name and confidence score is placed above the front face using alpha
+blending.
 
 % -----------------------------------------------------------------------
 \section{Experiments and Results}
@@ -395,8 +398,9 @@ Overall Accuracy & \multicolumn{2}{c}{88.8\%} \\
 
 The results show strong performance across most classes. Cup and keyboard both
 achieved 100\% recall, and headphones reached 100\% precision. Glasses improved
-dramatically to 87.5\% precision and recall, suggesting the model learned to
-distinguish eyeglasses from other objects despite the noisy web crawl data.
+dramatically to 87.5\% precision and recall under MobileNetV2, compared to
+near-zero under the from-scratch ViT, confirming that the pretrained backbone
+learned to distinguish eyeglasses despite the noisy web crawl data.
 Tablet remained the weakest class with 70\% precision and 77.8\% recall, as
 flat rectangular devices are inherently difficult to separate at certain angles.
 

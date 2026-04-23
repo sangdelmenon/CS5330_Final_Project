@@ -50,13 +50,13 @@ The main driver of errors is visual ambiguity at class boundaries, not data sour
 
 ---
 
-### Slide 6: Live Demo
+### Slide 6: Demo Capture
 
 This screenshot was captured during a live demo session. A PS5 DualSense controller is the dominant object in the center region of interest and the model predicts ps5_controller at 85% confidence.
 
 The green 3D wireframe box is cleanly anchored to the object with visible front and back faces connected by pillars. The label tag shows the class name and confidence above the front face. The AR rendering pipeline is robust: the box always appears at the correct position and scale relative to whatever is in the ROI, regardless of whether the classification itself is right.
 
-The session was running at 22 to 30 FPS with a confidence threshold of 0.50.
+The session was running at 20 to 30 FPS with a confidence threshold of 0.50.
 
 ---
 

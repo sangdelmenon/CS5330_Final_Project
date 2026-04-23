@@ -78,7 +78,7 @@ python train.py --model mobilenet       # MobileNetV2 (best accuracy)
 python train.py --model vit --epochs 20 # Vision Transformer
 ```
 
-The script splits the dataset 70/15/15 (train/val/test) with a fixed seed of 42, applies augmentation to training images only, trains with Adam and cosine annealing, saves the best checkpoint by validation accuracy, and reports overall accuracy and per-class precision and recall on the held-out test set. Training curves and a confusion matrix are saved to the Figures/ directory.
+The script splits the dataset 70/15/15 (train/val/test) with a fixed seed of 42, applies augmentation to training images only, trains with Adam and cosine annealing, saves the best checkpoint by validation accuracy, and reports overall accuracy and per-class precision and recall on the held-out test set. Training curves and a confusion matrix are saved to the Figures/ directory. Note that all three architectures save to the same object_model.pth filename by default, so running multiple architectures in sequence will overwrite the previous checkpoint. Rename the file between runs if you want to keep all three.
 
 ### Step 3: Run the Live AR System
 
