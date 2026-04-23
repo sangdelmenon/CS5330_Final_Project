@@ -327,15 +327,6 @@ transformers require substantial data to learn useful attention patterns.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\columnwidth]{VIT_ConfusionMatrix.png}
-  \caption{ViT confusion matrix on the held-out test set (10 classes). Many
-  classes cluster in a few bins, reflecting the model's difficulty
-  generalising from scratch on a small dataset.}
-  \label{fig:vit_cm}
-\end{figure}
-
-\begin{figure}[h]
-  \centering
   \includegraphics[width=\columnwidth]{CNN_lossperEpoch.png}
   \caption{CNN training and validation loss and accuracy curves (5 classes).}
   \label{fig:cnn_curves}
@@ -346,6 +337,15 @@ transformers require substantial data to learn useful attention patterns.
   \includegraphics[width=\columnwidth]{CNN_Confusion_Matrix.png}
   \caption{CNN confusion matrix on the held-out test set (5 classes).}
   \label{fig:cnn_cm}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\columnwidth]{VIT_ConfusionMatrix.png}
+  \caption{ViT confusion matrix on the held-out test set (10 classes). Many
+  classes cluster in a few bins, reflecting the model's difficulty
+  generalising from scratch on a small dataset.}
+  \label{fig:vit_cm}
 \end{figure}
 
 \subsection{MobileNetV2 Results (10 Classes)}
@@ -433,9 +433,9 @@ for building a real-time object classifier on a small custom dataset. The
 pretrained ImageNet backbone provides general visual features that carry over
 well to everyday objects even with only 100 to 170 training images per class,
 reaching 88.8\% test accuracy across 10 classes. Training from scratch with
-the CNN achieved 79.7\% on the 5-class dataset, which is reasonable given the
-aggressive augmentation pipeline but is otherwise limited by the small number
-of classes. The ViT reached only 43.2\% on the 10-class dataset when trained
+the CNN achieved 79.7\% on the 5-class dataset, a reasonable result given the
+aggressive augmentation pipeline, though not directly comparable to the 10-class
+results from the ViT and MobileNetV2. The ViT reached only 43.2\% on the 10-class dataset when trained
 from scratch, consistent with the literature finding that transformers require
 significantly more data than CNNs to learn useful representations. The
 parameter count (0.83M for ViT versus 2.19M for the CNN) was not the limiting
