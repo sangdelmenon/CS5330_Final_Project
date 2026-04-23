@@ -23,7 +23,12 @@ data/
 
 # macOS
 .DS_Store
+.DS_Store?
 __MACOSX/
+.Rhistory
+
+# Office temporary lock files
+~$*
 
 # IDE
 .vscode/
