@@ -70,15 +70,21 @@ All models were trained using the Adam optimizer with a cosine annealing learnin
 
 ### 4.1 CNN Training (5 classes)
 
-The CNN trained on the 5-class webcam dataset reached a test accuracy of 79.7%. Validation accuracy plateaued around 68% with the best checkpoint saved at epoch 14. The result reflects the aggressive augmentation pipeline applied during training. Transforms like random perspective distortion and random erasing add useful variance for larger models but make convergence harder for a smaller CNN on a clean 5-class dataset.
+The CNN trained on the 5-class webcam dataset reached a test accuracy of 79.7%. Validation accuracy plateaued around 68% with the best checkpoint saved at epoch 14. The gap between validation and test accuracy is mainly a product of small split sizes. With roughly 120 samples in each held-out partition, a single seed can produce a test split that is slightly easier or harder than the validation split, moving the numbers a few points in either direction.
 
 ![CNN Training Curves](Figures/CNN_lossperEpoch.png)
 
-### 4.2 MobileNet Training (10 classes)
+### 4.2 ViT Training (10 classes)
+
+The Vision Transformer was trained from scratch on all 10 classes. It reached a test accuracy of 43.2%, with a mean epoch time of 14.2 seconds on Apple MPS. Three classes, glasses, headphones, and ps5_controller, received near-zero precision in the confusion matrix, meaning the model rarely predicted them correctly. This is expected behavior for a transformer trained without pretrained weights on a dataset of roughly 1000 samples. Transformers need substantially more data than CNNs to develop useful attention patterns from random initialization.
+
+![ViT Training Curves](Figures/VIT_Loss_Accuracy.png)
+
+### 4.3 MobileNet Training (10 classes)
 
 MobileNetV2 on all 10 classes showed steady improvement through the first 7 epochs, with validation accuracy reaching 88.8% at its peak. Training accuracy continued climbing past 97% while validation accuracy leveled off, showing mild overfitting in the later epochs. The validation loss plateaued around 0.4, consistent with the accuracy curves.
 
-![MobileNet Training Curves](Figures/MOBILENET_Loss&Accuracy.png)
+![MobileNet Training Curves](Figures/MOBILENET_Loss_Accuracy.png)
 
 ---
 
@@ -90,7 +96,13 @@ The CNN achieved 79.7% test accuracy on the 5-class held-out set. The confusion 
 
 ![CNN Confusion Matrix](Figures/CNN_Confusion_Matrix.png)
 
-### 5.2 MobileNetV2 Results (10 Classes)
+### 5.2 ViT Results (10 Classes)
+
+The Vision Transformer reached 43.2% test accuracy on the 10-class held-out set. The confusion matrix is heavily skewed, with most predictions concentrated in a small number of bins. Glasses, headphones, and ps5_controller show near-zero precision. The result is consistent with the known difficulty of training transformers from scratch on small datasets and confirms that pretraining is not optional for this task.
+
+![ViT Confusion Matrix](Figures/VIT_ConfusionMatrix.png)
+
+### 5.3 MobileNetV2 Results (10 Classes)
 
 MobileNetV2 achieved 88.8% overall test accuracy on the 10-class held-out set.
 

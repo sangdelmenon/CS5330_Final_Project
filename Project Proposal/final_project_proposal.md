@@ -3,6 +3,8 @@
 
 **Student:** Sangeeth Deleep Menon
 **NUID:** 002524579
+
+*Note: Raj Gupta (NUID: 002068701) joined the project after this proposal was submitted. The final report reflects contributions from both team members.*
 **Program:** MSCS Boston, Section 03 (CRN 40669, Online)
 
 ---

@@ -304,10 +304,10 @@ MobileNetV2   & 10 & 2.24M & \textbf{88.8\%} \\
 
 The CNN trained on the 5-class dataset reached a test accuracy of 79.7\%
 (Fig.~\ref{fig:cnn_curves}, Fig.~\ref{fig:cnn_cm}). The best checkpoint was
-saved at epoch 14. The result reflects the aggressive augmentation pipeline
-applied during training: transforms like random perspective distortion and
-random erasing add useful variance for the 10-class model but make convergence
-harder for a smaller CNN on a clean 5-class dataset.
+saved at epoch 14. The gap between validation and test accuracy is primarily
+a product of small split sizes. With roughly 120 samples in each held-out
+partition, a single random seed can produce a test split that is slightly
+easier or harder than the validation split, shifting results by a few points.
 
 \subsection{ViT Results (10 Classes)}
 
@@ -352,7 +352,7 @@ to climb past 97\% while validation accuracy plateaus near 88\%.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\columnwidth]{MOBILENET_Loss&Accuracy.png}
+  \includegraphics[width=\columnwidth]{MOBILENET_Loss_Accuracy.png}
   \caption{MobileNetV2 training and validation curves (10 classes, 20 epochs).}
   \label{fig:mobile_curves}
 \end{figure}
