@@ -1,7 +1,7 @@
 # CS5330 Final Project: Real-Time Object Recognition and Augmented Reality Fusion
 
-**Students:** Sangeeth Deleep Menon (NUID: 002524579) and Raj Gupta (NUID: 002068701)
-**Program:** MSCS Boston, Section 03 (CRN 40669, Online)
+**Students:** Sangeeth Deleep Menon (NUID: 002524579) and Raj Gupta (NUID: 002068701)\
+**Program:** MSCS Boston, Section 03 (CRN 40669, Online)\
 **Course:** CS5330 Pattern Recognition and Computer Vision, Spring 2026
 
 **Presentation video:** https://drive.google.com/file/d/1l1NJLrnBtZBt5Nko6NsMIqZLKrwrT2dz/view?usp=sharing
@@ -28,8 +28,6 @@ Final_Project/
 ├── download_images.py  # Bing image downloader for web-only classes
 ├── data/               # One sub-folder per class (created by collect_data.py)
 ├── Figures/            # Training curves and confusion matrices
-├── report/             # IEEE-format LaTeX report (main.tex, main.pdf)
-├── presentation/       # HTML slides, PPTX, and speaker script
 └── object_model.pth    # Saved best model checkpoint (created by train.py)
 ```
 
